@@ -535,7 +535,7 @@ bool SweepPlanGraph::solve(const Point_2& start, const Point_2& goal,
 
   ROS_INFO("Start solving GTSP");
   if (!solver.solve()) {
-    ROS_ERROR("GkMa solution failed.");
+    ROS_ERROR("GLKH solution failed.");
     return false;
   }
   ROS_INFO("Finished solving GTSP");

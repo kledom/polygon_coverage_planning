@@ -69,8 +69,47 @@ void Glkh::setSolver(const std::string& file, bool binary) {
 void Glkh::setSolver(const Task& task) {
   // Create problem file
 
-  std::ofstream f("file.txt");
-  //create_problem_file();
+  std::string name = "sweep_plan";
+  std::string type = task.mIsSymmetric() ? "GTSP" : "AGTSP";
+  std::string comment = "Create by polygon_coverage_solvers.";
+  size_t dimension = task.m.size();
+  size_t num_sets = task.clusters.size();
+  std::string edge_weight_type = "EXPLICIT";
+  std::string edge_weight_format = "FULL_MATRIX";
+
+  // Problem file
+  std::ofstream f("/home/kledom/problem.gtsp");
+  f << "Name: " << name << std::endl;
+  f << "Type: " << type << std::endl;
+  f << "COMMENT: " << comment << std::endl;
+  f << "DIMENSION: " << dimension << std::endl;
+  f << "GTSP_SETS: " << num_sets << std::endl;
+  f << "EDGE_WEIGHT_TYPE: " << edge_weight_type << std::endl;
+  f << "EDGE_WEIGHT_FORMAT: " << edge_weight_format << std::endl;
+
+  f << "EDGE_WEIGHT_SECTION:" << std::endl;
+  for (size_t i = 0; i < task.m.size(); i++)
+  {
+    for (auto m_ij : task.m[i])
+    {
+      f << m_ij << " ";
+    }
+    f << std::endl;
+  }
+
+  f << "GTSP_SET_SECTION:" << std::endl;
+  for (size_t i = 0; i < task.clusters.size(); i++)
+  {
+    f << i + 1 << " ";
+    for (auto vertex_idx : task.clusters[i])
+    {
+      f << vertex_idx + 1 << " ";
+    }
+    f << -1 << std::endl;
+  }
+
+  f << "EOF" << std::endl;
+  f.close();
 }
 
 bool Glkh::solve() {

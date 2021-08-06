@@ -24,10 +24,10 @@
 #include <gtest/gtest.h>
 #include <ros/package.h>
 
-#include "polygon_coverage_solvers/gk_ma.h"
+#include "polygon_coverage_solvers/glkh.h"
 
 using namespace polygon_coverage_planning;
-using namespace gk_ma;
+using namespace glkh;
 
 const std::string kPackageName = "polygon_coverage_solvers";
 

@@ -334,7 +334,7 @@ GraphBase<NodeProperty, EdgeProperty>::getAdjacencyMatrix() const {
       if (edgeExists(edge) && getEdgeCost(edge, &cost)) {
         m[i][j] = doubleToMilliInt(cost);
       } else {
-        m[i][j] = std::numeric_limits<int>::max();
+        m[i][j] = std::numeric_limits<int>::max(); // TODO: overflow!
       }
     }
   }

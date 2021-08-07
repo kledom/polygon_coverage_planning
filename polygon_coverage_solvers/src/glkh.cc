@@ -122,6 +122,7 @@ void Glkh::setSolver(const Task& task) {
     {
       if (w_ij == 2147483647)
       {
+        // TODO: FIX Overflow
         w_ij = 9999999;
       }
       f << w_ij << " ";

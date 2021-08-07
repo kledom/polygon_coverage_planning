@@ -4,14 +4,12 @@ ROS_VERSION=`rosversion -d`
 echo "ROS version: ${ROS_VERSION}"
 
 # Build dependencies.
-sudo apt-get install -y python-wstool python-catkin-tools
+sudo apt-get install -y python3-wstool python3-catkin-tools
 
 # Package dependencies.
 echo "Installing MAV_COMM dependencies."
 sudo apt-get install -y ros-${ROS_VERSION}-mav-msgs
 echo "Installing CGAL dependencies."
 sudo apt-get install -y libgmp-dev libmpfr-dev
-echo "Installing MONO dependencies."
-sudo apt-get install -y mono-devel
 echo "Installig GLOG dependencices."
 sudo apt-get install -y libgoogle-glog-dev

@@ -24,15 +24,43 @@
 #include <ros/package.h>
 
 #include <fstream>
+#include <sstream>
+#include <filesystem>
+
+#include <algorithm>
+#include <cctype>
+#include <locale>
+
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+    ltrim(s);
+    rtrim(s);
+}
 
 namespace polygon_coverage_planning {
 namespace glkh {
 
-const std::string kFile = "runGLKH";
+const std::string kFile = "./runGLKH";
 const std::string kPackageName = "polygon_coverage_solvers";
 const std::string kPackagePath = ros::package::getPath(kPackageName);
 const std::string kCatkinPath = kPackagePath.substr(0, kPackagePath.find("/src/"));
-const std::string kLibraryPath = kCatkinPath + "/devel/lib";
+// const std::string kLibraryPath = kCatkinPath + "/devel/lib";
+const std::string kLibraryPath = kCatkinPath + "/build/polygon_coverage_solvers/glkh-prefix/src/glkh/";
+const std::string kGtspLibPath = kLibraryPath + "/GTSPLIB/";
 const std::string kExecutablePath = kLibraryPath + "/" + kFile;
 
 bool Task::mIsSquare() const {
@@ -78,7 +106,7 @@ void Glkh::setSolver(const Task& task) {
   std::string edge_weight_format = "FULL_MATRIX";
 
   // Problem file
-  std::ofstream f("/home/kledom/problem.gtsp");
+  std::ofstream f(kGtspLibPath + "/swipe_plan.gtsp");
   f << "Name: " << name << std::endl;
   f << "Type: " << type << std::endl;
   f << "COMMENT: " << comment << std::endl;
@@ -90,9 +118,13 @@ void Glkh::setSolver(const Task& task) {
   f << "EDGE_WEIGHT_SECTION:" << std::endl;
   for (size_t i = 0; i < task.m.size(); i++)
   {
-    for (auto m_ij : task.m[i])
+    for (auto w_ij : task.m[i])
     {
-      f << m_ij << " ";
+      if (w_ij == 2147483647)
+      {
+        w_ij = 9999999;
+      }
+      f << w_ij << " ";
     }
     f << std::endl;
   }
@@ -112,18 +144,55 @@ void Glkh::setSolver(const Task& task) {
   f.close();
 }
 
+static inline std::string &ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c);}));
+  return s;
+}
+
 bool Glkh::solve() {
   // Solve
-  // solve_with_file();
-
-  // Validate solution
-  //int num_nodes = solution_length...
-  int num_nodes = 5;
-  solution_.resize(num_nodes);
-  for (int i = 0; i < num_nodes; ++i) {
-    //solution_[i] = solution_at_index(i)
+  std::filesystem::current_path(kLibraryPath);
+  bool error = system((kFile + " " + "swipe_plan").c_str());
+  if (error)
+  {
+    return false;
   }
 
+  // Read tour file
+  std::ifstream infile(kLibraryPath + "/swipe_plan.tour");
+  std::string line;
+  int dimension = -1;
+  while (std::getline(infile, line))
+  {
+    if (line != "TOUR_SECTION")
+    {
+      std::istringstream iss(line);
+      std::string key;
+      if (std::getline(iss, key, ':'))
+      {
+        trim(key);
+        if (key == "DIMENSION")
+        {
+          iss >> dimension;
+        }
+      }
+    }
+    else
+    {
+      assert(dimension > -1);
+      solution_.resize(dimension);
+      for(int i = 0; i < dimension && std::getline(infile, line); i++)
+      {
+        std::istringstream iss(line);
+        int n;
+        iss >> n;
+        solution_[i] = n - 1;
+      }
+      assert(std::getline(infile, line) && line == "-1");
+    }
+  }
+
+  infile.close();
   return true;
 }
 

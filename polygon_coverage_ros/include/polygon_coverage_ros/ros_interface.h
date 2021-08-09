@@ -26,6 +26,7 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/Polygon.h>
 #include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/Path.h>
 #include <mav_msgs/conversions.h>
 #include <polygon_coverage_msgs/PolygonWithHolesStamped.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
@@ -73,10 +74,20 @@ void poseArrayMsgFromEigenTrajectoryPointVector(
     const std::string& frame_id,
     geometry_msgs::PoseArray* trajectory_points_pose_array);
 
+void pathMsgFromEigenTrajectoryPointVector(
+    const mav_msgs::EigenTrajectoryPointVector& trajectory_points,
+    const std::string& frame_id,
+    nav_msgs::Path* trajectory_points_path);
+
 void poseArrayMsgFromPath(
     const std::vector<Point_2>& waypoints, double altitude,
     const std::string& frame_id,
     geometry_msgs::PoseArray* trajectory_points_pose_array);
+
+void pathMsgFromPath(
+    const std::vector<Point_2>& waypoints, double altitude,
+    const std::string& frame_id,
+    nav_msgs::Path* trajectory_points_path);
 
 void msgMultiDofJointTrajectoryFromPath(
     const std::vector<Point_2>& waypoints, double altitude,

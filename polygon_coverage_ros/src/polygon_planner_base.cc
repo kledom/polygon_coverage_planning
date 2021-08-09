@@ -26,6 +26,7 @@
 #include <polygon_coverage_planners/cost_functions/path_cost_functions.h>
 
 #include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/Path.h>
 #include <visualization_msgs/MarkerArray.h>
 
 namespace polygon_coverage_planning {
@@ -59,6 +60,8 @@ void PolygonPlannerBase::advertiseTopics() {
       "path_markers", 1, true);
   waypoint_list_pub_ = nh_.advertise<geometry_msgs::PoseArray>(
       "waypoint_list", 1, latch_topics_);
+  path_pub_ = nh_.advertise<nav_msgs::Path>(
+      "path", 1, latch_topics_);
   // Services for generating the plan.
   set_polygon_srv_ = nh_private_.advertiseService(
       "set_polygon", &PolygonPlannerBase::setPolygonCallback, this);
@@ -311,15 +314,19 @@ bool PolygonPlannerBase::publishTrajectoryPoints() {
 
   // Convert path to pose array.
   geometry_msgs::PoseArray trajectory_points_pose_array;
+  nav_msgs::Path trajectory_points_path;
   if (!altitude_.has_value()) {
     ROS_WARN_STREAM("Cannot send trajectory because altitude not set.");
     return false;
   }
   poseArrayMsgFromPath(solution_, altitude_.value(), global_frame_id_,
                        &trajectory_points_pose_array);
+  pathMsgFromPath(solution_, altitude_.value(), global_frame_id_,
+                       &trajectory_points_path);
 
   // Publishing
   waypoint_list_pub_.publish(trajectory_points_pose_array);
+  path_pub_.publish(trajectory_points_path);
 
   // Success
   return true;

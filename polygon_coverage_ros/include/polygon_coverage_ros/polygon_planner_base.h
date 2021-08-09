@@ -116,6 +116,7 @@ class PolygonPlannerBase {
   // Publishers and Services
   ros::Publisher marker_pub_;
   ros::Publisher waypoint_list_pub_;
+  ros::Publisher path_pub_;
   ros::Subscriber clicked_point_sub_;
   ros::Subscriber polygon_sub_;
   ros::ServiceServer set_polygon_srv_;

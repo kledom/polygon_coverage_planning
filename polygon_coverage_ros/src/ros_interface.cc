@@ -66,6 +66,23 @@ void poseArrayMsgFromEigenTrajectoryPointVector(
   }
 }
 
+void pathMsgFromEigenTrajectoryPointVector(
+    const mav_msgs::EigenTrajectoryPointVector& trajectory_points,
+    const std::string& frame_id,
+    nav_msgs::Path* trajectory_points_path) {
+  ROS_ASSERT(trajectory_points_pose_array);
+
+  // Header
+  trajectory_points_path->header.frame_id = frame_id;
+  // Converting and populating the message with all points
+  for (const mav_msgs::EigenTrajectoryPoint& trajectory_point :
+       trajectory_points) {
+    geometry_msgs::PoseStamped msg;
+    mav_msgs::msgPoseStampedFromEigenTrajectoryPoint(trajectory_point, &msg);
+    trajectory_points_path->poses.push_back(msg);
+  }
+}
+
 void poseArrayMsgFromPath(
     const std::vector<Point_2>& waypoints, double altitude,
     const std::string& frame_id,
@@ -76,6 +93,18 @@ void poseArrayMsgFromPath(
   eigenTrajectoryPointVectorFromPath(waypoints, altitude, &eigen_traj);
   poseArrayMsgFromEigenTrajectoryPointVector(eigen_traj, frame_id,
                                              trajectory_points_pose_array);
+}
+
+void pathMsgFromPath(
+    const std::vector<Point_2>& waypoints, double altitude,
+    const std::string& frame_id,
+    nav_msgs::Path* trajectory_points_path) {
+  ROS_ASSERT(trajectory_points_path);
+
+  mav_msgs::EigenTrajectoryPointVector eigen_traj;
+  eigenTrajectoryPointVectorFromPath(waypoints, altitude, &eigen_traj);
+  pathMsgFromEigenTrajectoryPointVector(eigen_traj, frame_id,
+                                             trajectory_points_path);
 }
 
 void msgMultiDofJointTrajectoryFromPath(
